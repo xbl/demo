@@ -23,7 +23,10 @@ export const skillApi = {
   getSkill: (id: string) => api.get<ApiResponse<Skill>>(`/skills/${id}`),
   
   // 获取分类
-  getCategories: () => api.get<ApiResponse<SkillCategory[]>>('/categories')
+  getCategories: () => api.get<ApiResponse<SkillCategory[]>>('/categories'),
+  
+  // 获取分类详情
+  getCategory: (id: string) => api.get<ApiResponse<any>>(`/categories/${id}`)
 }
 
 export default api

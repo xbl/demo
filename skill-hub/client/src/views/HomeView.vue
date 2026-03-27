@@ -20,7 +20,7 @@
             <span class="icon">🔥</span>
             精选 Skills
           </h2>
-          <router-link to="/categories/featured" class="view-all">
+          <router-link to="/category/featured" class="view-all">
             查看全部 →
           </router-link>
         </div>

@@ -1,0 +1,385 @@
+openapi: 3.0.3
+info:
+  title: SkillHub API
+  description: AI Agent Skills Marketplace API
+  version: 1.0.0
+  contact:
+    name: SkillHub Team
+    email: api@skillhub.example.com
+
+servers:
+  - url: http://localhost:4000/api
+    description: Development server
+  - url: https://api.skillhub.example.com/api
+    description: Production server
+
+tags:
+  - name: Skills
+    description: Skills management
+  - name: Categories
+    description: Skill categories
+  - name: Health
+    description: Health check
+
+paths:
+  /skills:
+    get:
+      tags: [Skills]
+      summary: Get skills list
+      description: Retrieve a paginated list of skills with optional filtering
+      operationId: getSkills
+      parameters:
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: category
+          in: query
+          description: Filter by category ID
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Search in name, description, tags
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [popular, recent, stars]
+            default: recent
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSkillResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /skills/featured:
+    get:
+      tags: [Skills]
+      summary: Get featured skills
+      description: Retrieve all featured skills
+      operationId: getFeaturedSkills
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillArrayResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /skills/{id}:
+    get:
+      tags: [Skills]
+      summary: Get skill by ID
+      description: Retrieve detailed information about a specific skill
+      operationId: getSkillById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Skill ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Get all categories
+      description: Retrieve all skill categories
+      operationId: getCategories
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryArrayResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /categories/{id}:
+    get:
+      tags: [Categories]
+      summary: Get category by ID
+      description: Retrieve category details with its skills
+      operationId: getCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Check API health status
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    Skill:
+      type: object
+      required: [id, name, description, author, tags, downloads, stars, featured, categoryId, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          description: Unique skill identifier
+        name:
+          type: string
+          description: Skill name
+        description:
+          type: string
+          description: Skill description
+        author:
+          type: string
+          description: Author name
+        authorAvatar:
+          type: string
+          description: Author avatar URL (optional)
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+          description: Skill tags
+        icon:
+          type: string
+          description: Icon emoji or URL (optional)
+          nullable: true
+        downloads:
+          type: integer
+          description: Number of downloads
+        stars:
+          type: integer
+          description: Number of stars
+        featured:
+          type: boolean
+          description: Whether this skill is featured
+        categoryId:
+          type: string
+          description: Category ID
+        createdAt:
+          type: string
+          format: date
+          description: Creation date (YYYY-MM-DD)
+        updatedAt:
+          type: string
+          format: date
+          description: Last update date (YYYY-MM-DD)
+
+    SkillCategory:
+      type: object
+      required: [id, name, icon, count]
+      properties:
+        id:
+          type: string
+          description: Category ID
+        name:
+          type: string
+          description: Category name
+        icon:
+          type: string
+          description: Category icon (emoji)
+        count:
+          type: integer
+          description: Number of skills in this category
+
+    PaginatedResponse:
+      type: object
+      required: [items, total, page, pageSize, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+          description: List of skills
+        total:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number
+        pageSize:
+          type: integer
+          description: Items per page
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    CategoryWithSkills:
+      allOf:
+        - $ref: '#/components/schemas/SkillCategory'
+        - type: object
+          properties:
+            skills:
+              type: array
+              items:
+                $ref: '#/components/schemas/Skill'
+
+    SkillResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Skill'
+        message:
+          type: string
+          nullable: true
+
+    SkillArrayResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+        message:
+          type: string
+          nullable: true
+
+    PaginatedSkillResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/PaginatedResponse'
+        message:
+          type: string
+          nullable: true
+
+    CategoryResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/CategoryWithSkills'
+        message:
+          type: string
+          nullable: true
+
+    CategoryArrayResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillCategory'
+        message:
+          type: string
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Invalid parameters
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Resource not found
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Internal server error

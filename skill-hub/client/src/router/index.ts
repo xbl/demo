@@ -15,9 +15,14 @@ const router = createRouter({
       component: () => import('@/views/SkillDetailView.vue')
     },
     {
-      path: '/categories/:id',
+      path: '/category/:id',
       name: 'category',
       component: () => import('@/views/CategoryView.vue')
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('@/views/SearchView.vue')
     }
   ]
 })

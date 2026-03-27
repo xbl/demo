@@ -9,19 +9,27 @@
         
         <nav class="nav">
           <router-link to="/" class="nav-link">首页</router-link>
-          <a href="#" class="nav-link">分类</a>
-          <a href="#" class="nav-link">文档</a>
+          <router-link to="/category/dev" class="nav-link">开发</router-link>
+          <router-link to="/category/ai" class="nav-link">AI</router-link>
+          <router-link to="/category/media" class="nav-link">多媒体</router-link>
         </nav>
         
         <div class="header-actions">
           <div class="search-box">
             <input 
+              v-model="searchKeyword"
               type="text" 
-              placeholder="搜索 Skills..." 
+              placeholder="搜索 Skills..."
               class="search-input"
+              @keyup.enter="handleSearch"
             />
+            <button class="search-icon-btn" @click="handleSearch">
+              🔍
+            </button>
           </div>
-          <button class="btn btn-primary">发布 Skill</button>
+          <button class="btn btn-primary">
+            <span>➕</span> 发布 Skill
+          </button>
         </div>
       </div>
     </header>
@@ -32,13 +40,24 @@
     
     <footer class="footer">
       <div class="container">
-        <p>© 2026 SkillHub. Build with Vue + Node.js</p>
+        <p>© 2026 SkillHub. Powered by Vue + Node.js</p>
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const searchKeyword = ref('')
+
+function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    router.push({ name: 'search', query: { q: searchKeyword.value } })
+  }
+}
 </script>
 
 <style scoped>
@@ -93,7 +112,7 @@
 
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .nav-link {
@@ -101,10 +120,14 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
+  padding: 0.375rem 0;
+  border-bottom: 2px solid transparent;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link.router-link-active {
   color: #fff;
+  border-bottom-color: #667eea;
 }
 
 .header-actions {
@@ -115,6 +138,8 @@
 
 .search-box {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
@@ -122,8 +147,9 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 0.5rem 1rem;
+  padding-right: 2.5rem;
   color: #fff;
-  width: 240px;
+  width: 220px;
   transition: all 0.2s;
 }
 
@@ -135,6 +161,22 @@
   outline: none;
   border-color: #667eea;
   background: rgba(255, 255, 255, 0.15);
+  width: 280px;
+}
+
+.search-icon-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.search-icon-btn:hover {
+  opacity: 1;
 }
 
 .btn {
@@ -144,6 +186,9 @@
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 .btn-primary {
@@ -166,5 +211,20 @@
   padding: 2rem 0;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    display: none;
+  }
+  
+  .search-input {
+    width: 160px;
+  }
+  
+  .search-input:focus {
+    width: 200px;
+  }
 }
 </style>
