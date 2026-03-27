@@ -69,7 +69,8 @@ export const skillService = {
       where.OR = [
         { name: { contains: search } },
         { description: { contains: search } },
-        { tags: { contains: search } }
+        { tags: { contains: search } },
+        { author: { contains: search } }
       ]
     }
 
