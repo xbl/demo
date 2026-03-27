@@ -217,4 +217,67 @@ skill-hub/
 
 ---
 
+## 9. Skill 规范 (参考 skillhub.club)
+
+### 9.1 SKILL.md 标准格式
+
+Skill 详情页面需展示 SKILL.md 内容，包含以下标准字段：
+
+```markdown
+# name: <skill-name>
+# description: <描述>
+
+<objective>
+  技能目标：解决什么问题
+</objective>
+
+<trigger_pattern>
+  触发模式：何时自动调用此 Skill
+</trigger_pattern>
+
+<action>
+  执行动作：Skill 具体的执行逻辑
+</action>
+
+<output_format>
+  输出格式：Skill 输出的格式规范
+</output_format>
+
+<examples>
+  使用示例
+</examples>
+```
+
+### 9.2 Skill 详情页增强
+
+- [ ] **评分系统**：Security、Clarity、Practicality、Quality、Maintainability、Innovation
+- [ ] **Output Preview**：展示 Skill 实际输出效果
+- [ ] **兼容 Agents**：Claude Code, Codex CLI, Gemini CLI, OpenCode, OpenClaw, Cursor 等
+- [ ] **使用指南**：详细的使用说明
+- [ ] **评估信息**：Skill 的质量评估
+
+### 9.3 发布流程增强
+
+- [ ] **SKILL.md 编辑器**：支持标准格式的 Skill 描述
+- [ ] **代码片段上传**：支持上传 Skill 源码/配置
+- [ ] **输出预览**：发布前预览 Skill 输出效果
+- [ ] **Agent 兼容性选择**：选择支持的 AI Agents
+
+---
+
+## 10. 测试策略
+
+### 10.1 单元测试
+- [ ] 后端 Service 层测试
+- [ ] 前端工具函数测试
+
+### 10.2 组件测试
+- [ ] Vue 组件测试 (Vitest)
+- [ ] 组件交互测试
+
+### 10.3 E2E 测试
+- [ ] 关键用户流程测试
+
+---
+
 *本文档最后更新于 2026-03-27*
