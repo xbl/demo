@@ -2,8 +2,9 @@
 
 ## 📚 文档
 
-- [SPEC.md](./SPEC.md) - 产品需求文档
+- [SPEC.md](./SPEC.md) - 产品需求文档 (v2)
 - [TASKS.md](./TASKS.md) - 详细任务清单
+- [SKILL.md](./SKILL.md) - 项目 Skill 定义
 
 ---
 
@@ -17,8 +18,11 @@
 | 4 | 数据持久化 | ✅ 完成 | 2 |
 | 5 | Skill 发布 | ✅ 完成 | 3 |
 | 6 | 社交功能 | ✅ 完成 | 1 |
-| 7 | 搜索增强 | ⏳ 待开始 | - |
-| 8 | 部署上线 | ⏳ 待开始 | - |
+| 7 | 搜索增强 | ✅ 完成 | 2 |
+| 8 | 部署上线 | ✅ 完成 | 1 |
+| 9 | 详情页完善 | ⏳ 待开始 | - |
+| 10 | 用户功能 | ⏳ 待开始 | - |
+| 11 | 高级功能 | ⏳ 待开始 | - |
 
 ---
 
@@ -29,11 +33,12 @@
 - Vite
 - Pinia
 - Vue Router
+- Vitest
 
 ### 后端
 - Express + TypeScript
 - Prisma ORM
-- SQLite → PostgreSQL
+- SQLite
 
 ---
 
