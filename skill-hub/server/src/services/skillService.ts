@@ -9,12 +9,16 @@ function transformSkill(skill: any): Skill {
     description: skill.description,
     author: skill.author,
     authorAvatar: skill.authorAvatar,
-    tags: JSON.parse(skill.tags),
+    tags: JSON.parse(skill.tags || '[]'),
     icon: skill.icon,
     downloads: skill.downloads,
     stars: skill.stars,
     featured: skill.featured,
     categoryId: skill.categoryId,
+    skillMd: skill.skillMd,
+    outputPreview: skill.outputPreview,
+    scores: skill.scores ? JSON.parse(skill.scores) : undefined,
+    compatibleAgents: skill.compatibleAgents ? JSON.parse(skill.compatibleAgents) : undefined,
     createdAt: skill.createdAt.toISOString().split('T')[0],
     updatedAt: skill.updatedAt.toISOString().split('T')[0]
   }

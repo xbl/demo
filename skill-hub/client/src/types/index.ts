@@ -10,6 +10,17 @@ export interface Skill {
   stars: number
   featured?: boolean
   categoryId?: string
+  skillMd?: string       // SKILL.md 内容
+  outputPreview?: string // Output Preview
+  scores?: {            // 评分
+    security: number
+    clarity: number
+    practicality: number
+    quality: number
+    maintainability: number
+    innovation: number
+  }
+  compatibleAgents?: string[] // 兼容的 Agents
   createdAt: string
   updatedAt: string
 }

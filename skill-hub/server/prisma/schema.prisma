@@ -21,6 +21,10 @@ model Skill {
   downloads Int      @default(0)
   stars     Int      @default(0)
   featured  Boolean  @default(false)
+  skillMd   String?  // SKILL.md 内容
+  outputPreview String? // Output Preview 内容
+  scores    String?  // 评分 JSON: {security, clarity, practicality, quality, maintainability, innovation}
+  compatibleAgents String? // 兼容的 Agents JSON: ["claude-code", "openclaw", ...]
   category  Category @relation(fields: [categoryId], references: [id])
   categoryId String
   createdAt DateTime @default(now())
