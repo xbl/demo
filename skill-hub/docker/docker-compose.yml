@@ -1,22 +1,3 @@
-# SkillHub 部署配置
-
-## 目录结构
-
-```
-skill-hub/
-├── docker/
-│   ├── Dockerfile.client
-│   ├── Dockerfile.server
-│   └── docker-compose.yml
-├── .dockerignore
-└── ...
-```
-
-## 配置文件
-
-### docker-compose.yml
-
-```yaml
 version: '3.8'
 
 services:
@@ -36,39 +17,17 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./server/uploads:/app/uploads
-      - ./server/prisma:/app/prisma
+      - server-uploads:/app/uploads
+      - server-db:/app/prisma/data
     environment:
       - DATABASE_URL=file:/app/prisma/data/skillhub.db
       - NODE_ENV=production
-```
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-### Dockerfile.client
-
-```dockerfile
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY client/package*.json ./
-RUN npm install
-COPY client/ ./
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-### Dockerfile.server
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY server/package*.json ./
-RUN npm install --production
-COPY server/ ./
-RUN npx prisma generate
-RUN npx prisma db push
-EXPOSE 4000
-CMD ["npm", "start"]
-```
+volumes:
+  server-uploads:
+  server-db:
