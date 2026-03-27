@@ -22,6 +22,32 @@ export const skillApi = {
   // 获取单个 Skill 详情
   getSkill: (id: string) => api.get<ApiResponse<Skill>>(`/skills/${id}`),
   
+  // 创建 Skill
+  createSkill: (data: {
+    name: string
+    description: string
+    author: string
+    authorAvatar?: string
+    tags?: string[]
+    icon?: string
+    categoryId: string
+    featured?: boolean
+  }) => api.post<ApiResponse<Skill>>('/skills', data),
+  
+  // 更新 Skill
+  updateSkill: (id: string, data: Partial<{
+    name: string
+    description: string
+    authorAvatar: string
+    tags: string[]
+    icon: string
+    categoryId: string
+    featured: boolean
+  }>) => api.patch<ApiResponse<Skill>>(`/skills/${id}`, data),
+  
+  // 删除 Skill
+  deleteSkill: (id: string) => api.delete(`/skills/${id}`),
+  
   // 获取分类
   getCategories: () => api.get<ApiResponse<SkillCategory[]>>('/categories'),
   
