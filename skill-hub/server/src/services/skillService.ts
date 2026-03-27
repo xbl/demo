@@ -29,7 +29,20 @@ function transformCategory(category: any): SkillCategory {
   }
 }
 
+// 更新分类计数
+async function updateCategoryCount(categoryId: string) {
+  const count = await prisma.skill.count({
+    where: { categoryId }
+  })
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { count }
+  })
+}
+
 export const skillService = {
+  // ===== READ =====
+  
   async getFeatured(): Promise<Skill[]> {
     const skills = await prisma.skill.findMany({
       where: { featured: true }
@@ -46,7 +59,6 @@ export const skillService = {
   } = {}): Promise<PaginatedResponse<Skill>> {
     const { page = 1, pageSize = 20, category, search, sort } = options
 
-    // Build where clause
     const where: any = {}
     
     if (category) {
@@ -61,10 +73,8 @@ export const skillService = {
       ]
     }
 
-    // Get total count
     const total = await prisma.skill.count({ where })
 
-    // Build order by
     let orderBy: any = { updatedAt: 'desc' }
     switch (sort) {
       case 'popular':
@@ -73,12 +83,8 @@ export const skillService = {
       case 'stars':
         orderBy = { stars: 'desc' }
         break
-      case 'recent':
-      default:
-        orderBy = { updatedAt: 'desc' }
     }
 
-    // Get items
     const items = await prisma.skill.findMany({
       where,
       orderBy,
@@ -101,6 +107,85 @@ export const skillService = {
     })
     return skill ? transformSkill(skill) : null
   },
+
+  // ===== CREATE =====
+
+  async create(data: {
+    name: string
+    description: string
+    author: string
+    authorAvatar?: string
+    tags: string[]
+    icon?: string
+    categoryId: string
+    featured?: boolean
+  }): Promise<Skill> {
+    const skill = await prisma.skill.create({
+      data: {
+        ...data,
+        tags: JSON.stringify(data.tags),
+        featured: data.featured || false,
+        downloads: 0,
+        stars: 0
+      }
+    })
+    
+    // 更新分类计数
+    await updateCategoryCount(data.categoryId)
+    
+    return transformSkill(skill)
+  },
+
+  // ===== UPDATE =====
+
+  async update(id: string, data: {
+    name?: string
+    description?: string
+    authorAvatar?: string
+    tags?: string[]
+    icon?: string
+    categoryId?: string
+    featured?: boolean
+  }): Promise<Skill | null> {
+    const existing = await prisma.skill.findUnique({ where: { id } })
+    if (!existing) return null
+
+    const updateData: any = { ...data }
+    if (data.tags) {
+      updateData.tags = JSON.stringify(data.tags)
+    }
+    
+    const oldCategoryId = existing.categoryId
+
+    const skill = await prisma.skill.update({
+      where: { id },
+      data: updateData
+    })
+
+    // 如果分类变更，更新新旧分类计数
+    if (data.categoryId && data.categoryId !== oldCategoryId) {
+      await updateCategoryCount(oldCategoryId)
+      await updateCategoryCount(data.categoryId)
+    }
+
+    return transformSkill(skill)
+  },
+
+  // ===== DELETE =====
+
+  async delete(id: string): Promise<boolean> {
+    const existing = await prisma.skill.findUnique({ where: { id } })
+    if (!existing) return false
+
+    await prisma.skill.delete({ where: { id } })
+    
+    // 更新分类计数
+    await updateCategoryCount(existing.categoryId)
+    
+    return true
+  },
+
+  // ===== CATEGORIES =====
 
   async getCategories(): Promise<SkillCategory[]> {
     const categories = await prisma.category.findMany({
