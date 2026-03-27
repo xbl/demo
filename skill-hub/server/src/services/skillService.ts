@@ -194,6 +194,19 @@ export const skillService = {
     return true
   },
 
+  // ===== DOWNLOADS =====
+
+  async incrementDownloads(id: string): Promise<Skill | null> {
+    const skill = await prisma.skill.update({
+      where: { id },
+      data: {
+        downloads: { increment: 1 }
+      }
+    })
+    
+    return transformSkill(skill)
+  },
+
   // ===== CATEGORIES =====
 
   async getCategories(): Promise<SkillCategory[]> {

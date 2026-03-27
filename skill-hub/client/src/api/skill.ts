@@ -6,6 +6,22 @@ const api = axios.create({
   timeout: 10000
 })
 
+interface SourceFile {
+  name: string
+  path: string
+  type: string
+}
+
+interface DownloadResponse {
+  skillId: string
+  name: string
+  version: string
+  downloads: number
+  downloadUrl: string
+  skillMd?: string
+  sourceFiles: SourceFile[]
+}
+
 export const skillApi = {
   // 获取精选 Skills
   getFeatured: () => api.get<ApiResponse<Skill[]>>('/skills/featured'),
@@ -21,6 +37,12 @@ export const skillApi = {
   
   // 获取单个 Skill 详情
   getSkill: (id: string) => api.get<ApiResponse<Skill>>(`/skills/${id}`),
+  
+  // 获取 Skill 源码文件列表
+  getFiles: (id: string) => api.get<ApiResponse<SourceFile[]>>(`/skills/${id}/files`),
+  
+  // 下载 Skill（增加下载计数）
+  downloadSkill: (id: string) => api.post<ApiResponse<DownloadResponse>>(`/skills/${id}/download`),
   
   // 创建 Skill
   createSkill: (data: {

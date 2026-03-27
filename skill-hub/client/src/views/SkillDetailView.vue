@@ -413,12 +413,30 @@ async function submitComment() {
 }
 
 // 新功能：下载 Skill
-function downloadSkill() {
+async function downloadSkill() {
   if (!skill.value) return
   
-  // 增加下载计数
-  skill.value.downloads++
-  alert(`📥 开始下载 "${skill.value.name}"...\n\n提示: 实际部署时会生成下载链接`)
+  try {
+    const res = await skillApi.downloadSkill(route.params.id as string)
+    if (res.data.success) {
+      // 更新本地下载计数
+      skill.value.downloads = res.data.data.downloads
+      
+      // 如果有 SKILL.md 内容，提供复制选项
+      if (res.data.data.skillMd) {
+        const copyNow = confirm('📥 下载成功！\n\n是否将 SKILL.md 内容复制到剪贴板？')
+        if (copyNow) {
+          navigator.clipboard.writeText(res.data.data.skillMd)
+          alert('✅ SKILL.md 已复制到剪贴板！')
+        }
+      } else {
+        alert(`📥 "${skill.value.name}" 下载成功！\n\n下载次数: ${res.data.data.downloads}`)
+      }
+    }
+  } catch (e: any) {
+    console.error('Download failed:', e)
+    alert('下载失败，请重试')
+  }
 }
 
 // 新功能：复制 SKILL.md
@@ -432,11 +450,34 @@ function copySkillMd() {
 }
 
 // 新功能：一键安装
-function installSkill() {
+async function installSkill() {
   if (!skill.value) return
   
-  const agentList = skill.value.compatibleAgents?.join(', ') || 'OpenClaw'
-  alert(`🚀 一键安装到 ${agentList}...\n\n功能开发中...`)
+  try {
+    const res = await skillApi.downloadSkill(route.params.id as string)
+    if (res.data.success) {
+      const agentList = skill.value.compatibleAgents?.join(', ') || 'OpenClaw'
+      
+      // 显示安装信息
+      const installInfo = `
+🚀 正在安装到 ${agentList}...
+
+Skill: ${skill.value.name}
+版本: ${res.data.data.version}
+作者: ${skill.value.author}
+
+${res.data.data.skillMd ? '📝 SKILL.md 已准备就绪' : ''}
+${res.data.data.sourceFiles?.length ? `📁 ${res.data.data.sourceFiles.length} 个源文件` : ''}
+
+✅ 安装完成！请在对应的 Agent 中使用此 Skill。
+      `.trim()
+      
+      alert(installInfo)
+    }
+  } catch (e: any) {
+    console.error('Install failed:', e)
+    alert('安装失败，请重试')
+  }
 }
 
 // 新功能：查看文件

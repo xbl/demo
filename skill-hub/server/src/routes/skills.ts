@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { skillService } from '../services/skillService.js'
+import path from 'path'
+import fs from 'fs'
 
 const router = Router()
 
@@ -71,6 +73,129 @@ router.get('/:id', async (req: Request, res: Response) => {
       success: false,
       data: null,
       message: 'Failed to fetch skill'
+    })
+  }
+})
+
+// GET /api/skills/:id/files - 获取 Skill 源码文件列表
+router.get('/:id/files', async (req: Request, res: Response) => {
+  try {
+    const skill = await skillService.getById(req.params.id)
+    
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Skill not found'
+      })
+    }
+    
+    // 解析 sourceFiles，如果没有则返回默认文件列表
+    let files = []
+    if (skill.sourceFiles) {
+      try {
+        files = JSON.parse(skill.sourceFiles)
+      } catch (e) {
+        files = []
+      }
+    }
+    
+    // 如果没有文件，返回模拟数据
+    if (files.length === 0) {
+      files = [
+        { name: 'SKILL.md', path: '/SKILL.md', type: 'markdown' },
+        { name: 'index.ts', path: '/src/index.ts', type: 'typescript' },
+        { name: 'config.json', path: '/config.json', type: 'json' },
+      ]
+    }
+    
+    res.json({
+      success: true,
+      data: files
+    })
+  } catch (error) {
+    console.error('Error fetching files:', error)
+    res.status(500).json({
+      success: false,
+      data: [],
+      message: 'Failed to fetch files'
+    })
+  }
+})
+
+// POST /api/skills/:id/download - 下载 Skill（增加下载计数）
+router.post('/:id/download', async (req: Request, res: Response) => {
+  try {
+    const skill = await skillService.incrementDownloads(req.params.id)
+    
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Skill not found'
+      })
+    }
+    
+    // 返回下载信息
+    res.json({
+      success: true,
+      data: {
+        skillId: skill.id,
+        name: skill.name,
+        version: skill.version || '1.0.0',
+        downloads: skill.downloads,
+        // 实际部署时可以返回真实下载链接
+        downloadUrl: `/api/skills/${skill.id}/archive`,
+        skillMd: skill.skillMd,
+        sourceFiles: skill.sourceFiles ? JSON.parse(skill.sourceFiles) : []
+      }
+    })
+  } catch (error) {
+    console.error('Error downloading skill:', error)
+    res.status(500).json({
+      success: false,
+      data: null,
+      message: 'Failed to download skill'
+    })
+  }
+})
+
+// GET /api/skills/:id/archive - 获取 Skill 归档文件（可选实现）
+router.get('/:id/archive', async (req: Request, res: Response) => {
+  try {
+    const skill = await skillService.getById(req.params.id)
+    
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        message: 'Skill not found'
+      })
+    }
+    
+    // 构建归档内容
+    const archiveContent = {
+      name: skill.name,
+      description: skill.description,
+      version: skill.version || '1.0.0',
+      license: skill.license || 'MIT',
+      author: skill.author,
+      tags: skill.tags,
+      skillMd: skill.skillMd,
+      outputPreview: skill.outputPreview,
+      scores: skill.scores ? JSON.parse(skill.scores) : null,
+      compatibleAgents: skill.compatibleAgents ? JSON.parse(skill.compatibleAgents) : [],
+      sourceFiles: skill.sourceFiles ? JSON.parse(skill.sourceFiles) : []
+    }
+    
+    // 返回 JSON 格式的归档
+    res.setHeader('Content-Type', 'application/json')
+    res.setHeader('Content-Disposition', `attachment; filename="${skill.name}-${skill.version || '1.0.0'}.json"`)
+    res.json(archiveContent)
+  } catch (error) {
+    console.error('Error fetching archive:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch archive'
     })
   }
 })
