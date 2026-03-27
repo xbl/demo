@@ -25,6 +25,8 @@ model Skill {
   categoryId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  comments  Comment[]
+  likes     Like[]
 
   @@index([categoryId])
   @@index([featured])
@@ -39,4 +41,23 @@ model Category {
   skills    Skill[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  skill     Skill    @relation(fields: [skillId], references: [id])
+  skillId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  skill     Skill    @relation(fields: [skillId], references: [id])
+  skillId   String
+  ipAddress String?  // 匿名标识
+  createdAt DateTime @default(now())
+
+  @@unique([skillId, ipAddress]) // 同一IP不能重复点赞
 }

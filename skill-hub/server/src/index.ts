@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import skillsRouter from './routes/skills.js'
 import categoriesRouter from './routes/categories.js'
+import socialRouter from './routes/social.js'
 import uploadRouter from './routes/upload.js'
 
 dotenv.config()
@@ -24,6 +25,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 app.use('/api/skills', skillsRouter)
 app.use('/api/categories', categoriesRouter)
 app.use('/api/upload', uploadRouter)
+app.use('/api/social', socialRouter)
 
 // Health check
 app.get('/health', (req, res) => {

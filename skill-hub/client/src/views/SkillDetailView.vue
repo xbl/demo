@@ -28,11 +28,30 @@
           </div>
         </div>
         <div class="skill-actions">
-          <button class="btn btn-primary btn-large">
+          <button 
+            class="btn btn-primary btn-large"
+            @click="useSkill"
+          >
             <span>🚀</span> 使用此 Skill
           </button>
-          <button class="btn btn-secondary">
-            <span>⭐</span> {{ skill.stars }}
+          
+          <!-- Like Button -->
+          <button 
+            :class="['btn', stats?.isLiked ? 'btn-liked' : 'btn-secondary', { 'btn-loading': liking }]"
+            @click="handleLike"
+            :disabled="liking"
+          >
+            <span>{{ stats?.isLiked ? '❤️' : '🤍' }}</span> 
+            {{ stats?.likes || 0 }}
+          </button>
+          
+          <!-- Favorite Button -->
+          <button 
+            :class="['btn', isFavorited ? 'btn-favorited' : 'btn-secondary', { 'btn-loading': favoriting }]"
+            @click="handleFavorite"
+          >
+            <span>{{ isFavorited ? '⭐' : '☆' }}</span>
+            {{ isFavorited ? '已收藏' : '收藏' }}
           </button>
         </div>
       </div>
@@ -46,8 +65,13 @@
         </div>
         <div class="stat-item">
           <span class="stat-icon">⭐</span>
-          <span class="stat-value">{{ skill.stars }}</span>
-          <span class="stat-label">Stars</span>
+          <span class="stat-value">{{ stats?.likes || 0 }}</span>
+          <span class="stat-label">点赞</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">💬</span>
+          <span class="stat-value">{{ stats?.comments || 0 }}</span>
+          <span class="stat-label">评论</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">🏷️</span>
@@ -89,24 +113,51 @@
         </div>
       </div>
 
-      <!-- Usage -->
+      <!-- Comments Section -->
       <div class="section">
-        <h2 class="section-title">📖 使用方法</h2>
-        <div class="code-block">
-          <div class="code-header">
-            <span>JavaScript / TypeScript</span>
-            <button class="copy-btn">复制</button>
+        <h2 class="section-title">💬 评论 ({{ comments.length }})</h2>
+        
+        <!-- Comment Form -->
+        <div class="comment-form">
+          <textarea 
+            v-model="newComment"
+            class="comment-input"
+            placeholder="发表评论..."
+            rows="3"
+            maxlength="500"
+          ></textarea>
+          <div class="comment-form-footer">
+            <span class="char-count">{{ newComment.length }}/500</span>
+            <button 
+              class="btn btn-primary"
+              @click="submitComment"
+              :disabled="!newComment.trim() || submitting"
+            >
+              {{ submitting ? '提交中...' : '发表评论' }}
+            </button>
           </div>
-          <pre><code>import { SkillHub } from '@skillhub/client'
+        </div>
 
-const skill = new SkillHub('{{ skill.name }}')
-
-// 调用 Skill
-const result = await skill.execute({
-  input: 'your input here'
-})
-
-console.log(result)</code></pre>
+        <!-- Comments List -->
+        <div class="comments-list" v-if="comments.length > 0">
+          <div 
+            v-for="comment in comments" 
+            :key="comment.id"
+            class="comment-item"
+          >
+            <div class="comment-avatar">👤</div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">匿名用户</span>
+                <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
+              </div>
+              <p class="comment-text">{{ comment.content }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty-comments" v-else>
+          <span>暂无评论，快来发表第一条评论吧！</span>
         </div>
       </div>
     </div>
@@ -120,30 +171,123 @@ console.log(result)</code></pre>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { Skill } from '@/types'
 import { skillApi } from '@/api/skill'
+import { socialApi } from '@/api/social'
 
 const route = useRoute()
 const skill = ref<Skill | null>(null)
+const stats = ref<{ likes: number; comments: number; isLiked: boolean } | null>(null)
+const comments = ref<any[]>([])
+const newComment = ref('')
+const submitting = ref(false)
+const liking = ref(false)
+const favoriting = ref(false)
+
+// 从 localStorage 获取收藏列表
+const favorites = reactive(new Set<string>(
+  JSON.parse(localStorage.getItem('skillhub_favorites') || '[]')
+))
+
+const isFavorited = computed(() => favorites.has(route.params.id as string))
 
 onMounted(async () => {
   try {
-    const res = await skillApi.getSkill(route.params.id as string)
-    if (res.data.success) {
-      skill.value = res.data.data
+    const skillRes = await skillApi.getSkill(route.params.id as string)
+    if (skillRes.data.success) {
+      skill.value = skillRes.data.data
+    }
+    
+    // 加载统计数据
+    const statsRes = await socialApi.getStats(route.params.id as string)
+    if (statsRes.data.success) {
+      stats.value = statsRes.data.data
+    }
+    
+    // 加载评论
+    const commentsRes = await socialApi.getComments(route.params.id as string)
+    if (commentsRes.data.success) {
+      comments.value = commentsRes.data.data || []
     }
   } catch (e) {
     console.error('Failed to load skill:', e)
   }
 })
 
+async function handleLike() {
+  liking.value = true
+  try {
+    const res = await socialApi.toggleLike(route.params.id as string)
+    if (res.data.success) {
+      stats.value = {
+        ...stats.value!,
+        likes: res.data.data.count,
+        isLiked: res.data.data.liked
+      }
+    }
+  } catch (e) {
+    console.error('Like failed:', e)
+  } finally {
+    liking.value = false
+  }
+}
+
+function handleFavorite() {
+  const skillId = route.params.id as string
+  if (favorites.has(skillId)) {
+    favorites.delete(skillId)
+  } else {
+    favorites.add(skillId)
+  }
+  localStorage.setItem('skillhub_favorites', JSON.stringify([...favorites]))
+}
+
+async function submitComment() {
+  if (!newComment.value.trim()) return
+  
+  submitting.value = true
+  try {
+    const res = await socialApi.createComment(route.params.id as string, newComment.value)
+    if (res.data.success) {
+      comments.value.unshift(res.data.data)
+      newComment.value = ''
+      stats.value!.comments++
+    }
+  } catch (e: any) {
+    alert(e.response?.data?.message || '评论失败')
+  } finally {
+    submitting.value = false
+  }
+}
+
+function useSkill() {
+  alert('Skill 使用功能开发中...')
+}
+
 function formatNumber(num: number): string {
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'k'
   }
   return num.toString()
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+  
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (days < 7) return `${days}天前`
+  
+  return date.toLocaleDateString('zh-CN')
 }
 </script>
 
@@ -181,6 +325,7 @@ function formatNumber(num: number): string {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .skill-icon-large {
@@ -197,6 +342,7 @@ function formatNumber(num: number): string {
 
 .skill-info {
   flex: 1;
+  min-width: 200px;
 }
 
 .skill-title {
@@ -212,6 +358,7 @@ function formatNumber(num: number): string {
   gap: 0.75rem;
   color: rgba(255, 255, 255, 0.6);
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .author-info {
@@ -281,7 +428,7 @@ function formatNumber(num: number): string {
   color: #fff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
@@ -296,6 +443,23 @@ function formatNumber(num: number): string {
   background: rgba(255, 255, 255, 0.15);
 }
 
+.btn-liked {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-favorited {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.btn-loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* Stats */
 .stats-row {
   display: flex;
@@ -305,6 +469,7 @@ function formatNumber(num: number): string {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .stat-item {
@@ -385,49 +550,103 @@ function formatNumber(num: number): string {
   line-height: 1.6;
 }
 
-/* Code Block */
-.code-block {
-  background: #0d1117;
-  border-radius: 12px;
-  overflow: hidden;
+/* Comments */
+.comment-form {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.code-header {
+.comment-input {
+  width: 100%;
+  background: #0f0f1a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  color: #fff;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.comment-form-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.75rem;
+}
+
+.char-count {
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.875rem;
 }
 
-.copy-btn {
-  background: rgba(102, 126, 234, 0.3);
-  border: none;
-  color: #667eea;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.75rem;
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.copy-btn:hover {
-  background: rgba(102, 126, 234, 0.5);
+.comment-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.code-block pre {
-  padding: 1rem;
-  overflow-x: auto;
-  margin: 0;
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
-.code-block code {
-  color: #e6edf3;
-  font-family: 'Fira Code', 'Consolas', monospace;
+.comment-content {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.comment-author {
+  color: #fff;
+  font-weight: 600;
+}
+
+.comment-time {
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.875rem;
+}
+
+.comment-text {
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
+}
+
+.empty-comments {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Loading */
@@ -464,6 +683,7 @@ function formatNumber(num: number): string {
   .skill-actions {
     flex-direction: row;
     width: 100%;
+    justify-content: center;
   }
 
   .stats-row {
