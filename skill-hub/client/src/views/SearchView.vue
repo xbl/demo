@@ -94,9 +94,9 @@ const sortBy = ref<'recent' | 'popular' | 'stars'>('popular')
 const popularTags = ref<{ tag: string; count: number }[]>([])
 
 const sortOptions = [
-  { value: 'popular', label: '最热' },
-  { value: 'recent', label: '最新' },
-  { value: 'stars', label: '最多星' }
+  { value: 'popular' as const, label: '最热' },
+  { value: 'recent' as const, label: '最新' },
+  { value: 'stars' as const, label: '最多星' }
 ]
 
 async function search() {

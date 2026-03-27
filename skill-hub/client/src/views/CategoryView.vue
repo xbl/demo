@@ -72,9 +72,9 @@ const searchQuery = ref('')
 const sortBy = ref<'recent' | 'popular' | 'stars'>('recent')
 
 const sortOptions = [
-  { value: 'recent', label: '最新' },
-  { value: 'popular', label: '最热' },
-  { value: 'stars', label: '最多星' }
+  { value: 'recent' as const, label: '最新' },
+  { value: 'popular' as const, label: '最热' },
+  { value: 'stars' as const, label: '最多星' }
 ]
 
 const categoryNameMap: Record<string, string> = {

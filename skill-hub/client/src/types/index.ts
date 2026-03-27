@@ -9,6 +9,7 @@ export interface Skill {
   downloads: number
   stars: number
   featured?: boolean
+  categoryId?: string
   createdAt: string
   updatedAt: string
 }
