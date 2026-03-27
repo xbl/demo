@@ -25,7 +25,7 @@
             />
             <button class="search-icon-btn" @click="handleSearch">
               🔍
-            </router-link>
+            </button>
           </div>
           <router-link to="/publish" class="btn btn-primary">
             <span>➕</span> 发布 Skill
