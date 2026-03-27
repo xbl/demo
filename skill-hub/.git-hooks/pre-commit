@@ -5,8 +5,9 @@
 
 echo "🔍 Running pre-commit checks..."
 
-# Change to skill-hub directory
-cd "$(git rev-parse --show-toplevel)/skill-hub" || exit 1
+# Get the repo root (parent of skill-hub if needed)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT/skill-hub" || exit 1
 
 # Install dependencies if needed
 if [ ! -d "node_modules" ]; then

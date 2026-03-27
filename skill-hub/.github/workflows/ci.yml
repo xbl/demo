@@ -30,12 +30,12 @@ jobs:
       - name: Run linter (client)
         run: |
           cd skill-hub/client
-          npm run lint || true
+          npm run lint
 
       - name: Type check (client)
         run: |
           cd skill-hub/client
-          npx vue-tsc --noEmit || true
+          npx vue-tsc --noEmit
 
       - name: Type check (server)
         run: |
@@ -66,12 +66,12 @@ jobs:
       - name: Run client tests
         run: |
           cd skill-hub/client
-          npm run test:run || true
+          npm run test:run
 
       - name: Run server tests
         run: |
           cd skill-hub/server
-          npm run test:run || true
+          npm run test:run
 
   # Build test
   build:
