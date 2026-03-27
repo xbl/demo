@@ -19,6 +19,10 @@
               <span>{{ skill.author }}</span>
             </span>
             <span class="divider">•</span>
+            <span>v{{ skill.version || '1.0.0' }}</span>
+            <span class="divider">•</span>
+            <span>{{ skill.license || 'MIT' }}</span>
+            <span class="divider">•</span>
             <span>更新于 {{ skill.updatedAt }}</span>
           </div>
           <div class="skill-tags-large">
@@ -28,11 +32,20 @@
           </div>
         </div>
         <div class="skill-actions">
+          <!-- 一键安装 -->
           <button 
-            class="btn btn-primary btn-large"
-            @click="useSkill"
+            class="btn btn-install btn-large"
+            @click="installSkill"
           >
-            <span>🚀</span> 使用此 Skill
+            <span>⚡</span> 一键安装
+          </button>
+          
+          <!-- 下载 -->
+          <button 
+            class="btn btn-download btn-large"
+            @click="downloadSkill"
+          >
+            <span>📥</span> 下载
           </button>
           
           <!-- Like Button -->
@@ -58,7 +71,7 @@
 
       <!-- Stats -->
       <div class="stats-row">
-        <div class="stat-item">
+        <div class="stat-item clickable" @click="downloadSkill">
           <span class="stat-icon">📥</span>
           <span class="stat-value">{{ formatNumber(skill.downloads) }}</span>
           <span class="stat-label">下载</span>
@@ -77,6 +90,51 @@
           <span class="stat-icon">🏷️</span>
           <span class="stat-value">{{ skill.tags.length }}</span>
           <span class="stat-label">标签</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📁</span>
+          <span class="stat-value">{{ sourceFiles.length }}</span>
+          <span class="stat-label">文件</span>
+        </div>
+      </div>
+
+      <!-- Action Cards -->
+      <div class="action-cards">
+        <div class="action-card" @click="copySkillMd">
+          <span class="action-icon">📋</span>
+          <span class="action-text">复制 SKILL.md</span>
+        </div>
+        <div class="action-card" @click="installSkill">
+          <span class="action-icon">🚀</span>
+          <span class="action-text">一键安装</span>
+        </div>
+        <div class="action-card" @click="downloadSkill">
+          <span class="action-icon">📦</span>
+          <span class="action-text">下载源码</span>
+        </div>
+        <div class="action-card" @click="showFiles = !showFiles">
+          <span class="action-icon">📂</span>
+          <span class="action-text">浏览文件</span>
+        </div>
+      </div>
+
+      <!-- File Browser -->
+      <div class="section" v-if="showFiles">
+        <h2 class="section-title">📁 文件浏览</h2>
+        <div class="file-tree">
+          <div 
+            v-for="file in sourceFiles" 
+            :key="file.path"
+            class="file-item"
+            @click="viewFile(file)"
+          >
+            <span class="file-icon">{{ getFileIcon(file.name) }}</span>
+            <span class="file-name">{{ file.name }}</span>
+            <span class="file-type">{{ file.type }}</span>
+          </div>
+          <div v-if="sourceFiles.length === 0" class="empty-files">
+            暂无源码文件
+          </div>
         </div>
       </div>
 
@@ -173,6 +231,11 @@
       <!-- SKILL.md Section -->
       <div class="section" v-if="skill.skillMd">
         <h2 class="section-title">📄 SKILL.md</h2>
+        <div class="skill-md-actions">
+          <button class="btn btn-small" @click="copySkillMd">
+            📋 复制
+          </button>
+        </div>
         <div class="skill-md-content">
           <pre><code>{{ skill.skillMd }}</code></pre>
         </div>
@@ -242,6 +305,12 @@ import type { Skill } from '@/types'
 import { skillApi } from '@/api/skill'
 import { socialApi } from '@/api/social'
 
+interface SourceFile {
+  name: string
+  path: string
+  type: string
+}
+
 const route = useRoute()
 const skill = ref<Skill | null>(null)
 const stats = ref<{ likes: number; comments: number; isLiked: boolean } | null>(null)
@@ -250,6 +319,14 @@ const newComment = ref('')
 const submitting = ref(false)
 const liking = ref(false)
 const favoriting = ref(false)
+const showFiles = ref(false)
+
+// 模拟源码文件列表（实际应从 API 获取）
+const sourceFiles = ref<SourceFile[]>([
+  { name: 'SKILL.md', path: '/SKILL.md', type: 'markdown' },
+  { name: 'index.ts', path: '/src/index.ts', type: 'typescript' },
+  { name: 'config.json', path: '/config.json', type: 'json' },
+])
 
 // 从 localStorage 获取收藏列表
 const favorites = reactive(new Set<string>(
@@ -263,6 +340,14 @@ onMounted(async () => {
     const skillRes = await skillApi.getSkill(route.params.id as string)
     if (skillRes.data.success) {
       skill.value = skillRes.data.data
+      // 解析 sourceFiles
+      if (skill.value.sourceFiles) {
+        try {
+          sourceFiles.value = JSON.parse(skill.value.sourceFiles)
+        } catch (e) {
+          sourceFiles.value = []
+        }
+      }
     }
     
     // 加载统计数据
@@ -327,8 +412,36 @@ async function submitComment() {
   }
 }
 
-function useSkill() {
-  alert('Skill 使用功能开发中...')
+// 新功能：下载 Skill
+function downloadSkill() {
+  if (!skill.value) return
+  
+  // 增加下载计数
+  skill.value.downloads++
+  alert(`📥 开始下载 "${skill.value.name}"...\n\n提示: 实际部署时会生成下载链接`)
+}
+
+// 新功能：复制 SKILL.md
+function copySkillMd() {
+  if (skill.value?.skillMd) {
+    navigator.clipboard.writeText(skill.value.skillMd)
+    alert('📋 SKILL.md 已复制到剪贴板！')
+  } else {
+    alert('⚠️ 该 Skill 暂无 SKILL.md 内容')
+  }
+}
+
+// 新功能：一键安装
+function installSkill() {
+  if (!skill.value) return
+  
+  const agentList = skill.value.compatibleAgents?.join(', ') || 'OpenClaw'
+  alert(`🚀 一键安装到 ${agentList}...\n\n功能开发中...`)
+}
+
+// 新功能：查看文件
+function viewFile(file: SourceFile) {
+  alert(`📄 ${file.name}\n路径: ${file.path}\n类型: ${file.type}`)
 }
 
 function copyOutput() {
@@ -362,6 +475,20 @@ function getAgentName(agent: string): string {
     'opencode': 'OpenCode',
   }
   return names[agent] || agent
+}
+
+function getFileIcon(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  const icons: Record<string, string> = {
+    'md': '📝',
+    'json': '📋',
+    'ts': '📘',
+    'js': '📒',
+    'vue': '💚',
+    'css': '🎨',
+    'html': '🌐',
+  }
+  return icons[ext || ''] || '📄'
 }
 
 function formatNumber(num: number): string {
@@ -526,9 +653,22 @@ function formatDate(dateStr: string): string {
   color: #fff;
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+.btn-install {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+}
+
+.btn-install:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+}
+
+.btn-download:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .btn-secondary {
@@ -553,20 +693,20 @@ function formatDate(dateStr: string): string {
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
-.btn-loading {
-  opacity: 0.6;
-  cursor: wait;
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
 }
 
 /* Stats */
 .stats-row {
   display: flex;
-  gap: 2rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
   background: #1a1a2e;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -575,20 +715,117 @@ function formatDate(dateStr: string): string {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
+  padding: 0.5rem 1rem;
+}
+
+.stat-item.clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 8px;
+}
+
+.stat-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .stat-icon {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
 }
 
 .stat-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Action Cards */
+.action-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.action-icon {
+  font-size: 1.5rem;
+}
+
+.action-text {
+  color: #fff;
   font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* File Browser */
+.file-tree {
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.file-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-icon {
+  font-size: 1.25rem;
+}
+
+.file-name {
+  flex: 1;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.file-type {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.empty-files {
+  padding: 2rem;
+  text-align: center;
   color: rgba(255, 255, 255, 0.5);
 }
 
@@ -732,6 +969,10 @@ function formatDate(dateStr: string): string {
 }
 
 /* SKILL.md */
+.skill-md-actions {
+  margin-bottom: 0.75rem;
+}
+
 .skill-md-content {
   background: #1a1a2e;
   border-radius: 12px;
@@ -881,10 +1122,15 @@ function formatDate(dateStr: string): string {
     flex-direction: row;
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
   }
 
   .stats-row {
     justify-content: center;
+  }
+
+  .action-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>
