@@ -124,6 +124,10 @@ export const skillService = {
     icon?: string
     categoryId: string
     featured?: boolean
+    skillMd?: string
+    outputPreview?: string
+    scores?: string
+    compatibleAgents?: string
   }): Promise<Skill> {
     const skill = await prisma.skill.create({
       data: {
