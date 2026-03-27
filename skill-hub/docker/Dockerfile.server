@@ -9,6 +9,9 @@ RUN npm install
 # Copy source code
 COPY server/ ./
 
+# Copy prisma files
+COPY server/prisma ./prisma/
+
 # Build TypeScript
 RUN npm run build
 
