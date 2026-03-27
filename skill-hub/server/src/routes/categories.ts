@@ -4,14 +4,15 @@ import { skillService } from '../services/skillService.js'
 const router = Router()
 
 // GET /api/categories - 获取所有分类
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const categories = skillService.getCategories()
+    const categories = await skillService.getCategories()
     res.json({
       success: true,
       data: categories
     })
   } catch (error) {
+    console.error('Error fetching categories:', error)
     res.status(500).json({
       success: false,
       data: [],
@@ -21,11 +22,26 @@ router.get('/', (req: Request, res: Response) => {
 })
 
 // GET /api/categories/:id - 获取分类详情及其 Skills
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const categories = skillService.getCategories()
-    const category = categories.find(c => c.id === id)
+    
+    if (id === 'featured') {
+      // Featured: 返回所有精选
+      const featured = await skillService.getFeatured()
+      return res.json({
+        success: true,
+        data: {
+          id: 'featured',
+          name: '精选推荐',
+          icon: '🔥',
+          count: featured.length,
+          skills: featured
+        }
+      })
+    }
+    
+    const category = await skillService.getCategoryById(id)
     
     if (!category) {
       return res.status(404).json({
@@ -35,16 +51,12 @@ router.get('/:id', (req: Request, res: Response) => {
       })
     }
     
-    const skills = skillService.getAll({ category: id }).items
-    
     res.json({
       success: true,
-      data: {
-        ...category,
-        skills
-      }
+      data: category
     })
   } catch (error) {
+    console.error('Error fetching category:', error)
     res.status(500).json({
       success: false,
       data: null,
