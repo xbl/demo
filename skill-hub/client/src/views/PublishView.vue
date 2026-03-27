@@ -323,7 +323,7 @@ async function handleSubmit() {
       compatibleAgents: form.compatibleAgents.length > 0 ? JSON.stringify(form.compatibleAgents) : undefined
     }
 
-    const res = await skillApi.create(skillData)
+    const res = await skillApi.createSkill(skillData)
     if (res.data.success) {
       alert('发布成功！')
       router.push('/my-skills')
