@@ -15,6 +15,9 @@ COPY server/prisma ./prisma/
 # Build TypeScript
 RUN npm run build
 
+# Set DATABASE_URL for Prisma
+ENV DATABASE_URL="file:/app/prisma/data/skillhub.db"
+
 # Generate Prisma client and push schema
 RUN npx prisma generate
 RUN npx prisma db push
