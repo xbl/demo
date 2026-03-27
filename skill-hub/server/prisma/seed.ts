@@ -3,7 +3,9 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  // 清空数据
+  // 清空数据（注意外键顺序：先删除关联记录）
+  await prisma.like.deleteMany()
+  await prisma.comment.deleteMany()
   await prisma.skill.deleteMany()
   await prisma.category.deleteMany()
 
