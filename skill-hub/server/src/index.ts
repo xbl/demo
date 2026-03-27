@@ -2,8 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import dotenv from 'dotenv'
+import path from 'path'
 import skillsRouter from './routes/skills.js'
 import categoriesRouter from './routes/categories.js'
+import uploadRouter from './routes/upload.js'
 
 dotenv.config()
 
@@ -15,9 +17,13 @@ app.use(helmet())
 app.use(cors())
 app.use(express.json())
 
+// 静态文件服务（上传的文件）
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+
 // API Routes
 app.use('/api/skills', skillsRouter)
 app.use('/api/categories', categoriesRouter)
+app.use('/api/upload', uploadRouter)
 
 // Health check
 app.get('/health', (req, res) => {
