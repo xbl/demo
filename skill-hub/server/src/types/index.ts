@@ -10,6 +10,10 @@ export interface Skill {
   stars: number
   featured: boolean
   categoryId: string
+  skillMd?: string
+  outputPreview?: string
+  scores?: string
+  compatibleAgents?: string
   createdAt: string
   updatedAt: string
 }

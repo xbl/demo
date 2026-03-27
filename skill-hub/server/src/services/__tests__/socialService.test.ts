@@ -59,7 +59,7 @@ describe('Social Service', () => {
 
       mockPrisma.comment.findMany.mockResolvedValue(mockComments)
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.getComments('skill-1')
 
       expect(result).toHaveLength(2)
@@ -69,7 +69,7 @@ describe('Social Service', () => {
     it('should return empty array when no comments', async () => {
       mockPrisma.comment.findMany.mockResolvedValue([])
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.getComments('skill-1')
 
       expect(result).toHaveLength(0)
@@ -88,7 +88,7 @@ describe('Social Service', () => {
       mockPrisma.skill.findUnique.mockResolvedValue({ id: 'skill-1' })
       mockPrisma.comment.create.mockResolvedValue(newComment)
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.createComment('skill-1', 'New comment')
 
       expect(result.content).toBe('New comment')
@@ -97,7 +97,7 @@ describe('Social Service', () => {
     it('should throw error for non-existent skill', async () => {
       mockPrisma.skill.findUnique.mockResolvedValue(null)
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       
       await expect(
         socialService.createComment('invalid-id', 'New comment')
@@ -111,7 +111,7 @@ describe('Social Service', () => {
       mockPrisma.like.create.mockResolvedValue({ id: 'like-1' })
       mockPrisma.like.count.mockResolvedValue(1)
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.toggleLike('skill-1', '127.0.0.1')
 
       expect(result.liked).toBe(true)
@@ -123,7 +123,7 @@ describe('Social Service', () => {
       mockPrisma.like.delete.mockResolvedValue({})
       mockPrisma.like.count.mockResolvedValue(0)
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.toggleLike('skill-1', '127.0.0.1')
 
       expect(result.liked).toBe(false)
@@ -137,7 +137,7 @@ describe('Social Service', () => {
       mockPrisma.comment.count.mockResolvedValue(5)
       mockPrisma.like.findMany.mockResolvedValue([{ id: 'like-1' }])
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.getSkillStats('skill-1', '127.0.0.1')
 
       expect(result.likes).toBe(10)
@@ -150,7 +150,7 @@ describe('Social Service', () => {
       mockPrisma.comment.count.mockResolvedValue(5)
       mockPrisma.like.findMany.mockResolvedValue([])
 
-      const { socialService } = await import('../socialService.js')
+      const { socialService } = await import('../socialService')
       const result = await socialService.getSkillStats('skill-1', '127.0.0.1')
 
       expect(result.likes).toBe(10)

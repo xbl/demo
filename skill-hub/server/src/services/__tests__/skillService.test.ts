@@ -60,7 +60,7 @@ describe('Skill Service', () => {
 
       mockPrisma.skill.findMany.mockResolvedValue(mockSkills)
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.getFeatured()
 
       expect(result).toHaveLength(1)
@@ -73,7 +73,7 @@ describe('Skill Service', () => {
     it('should return empty array when no featured skills', async () => {
       mockPrisma.skill.findMany.mockResolvedValue([])
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.getFeatured()
 
       expect(result).toHaveLength(0)
@@ -101,7 +101,7 @@ describe('Skill Service', () => {
       mockPrisma.skill.count.mockResolvedValue(1)
       mockPrisma.skill.findMany.mockResolvedValue(mockSkills)
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.getAll({ page: 1, pageSize: 10 })
 
       expect(result.items).toHaveLength(1)
@@ -114,7 +114,7 @@ describe('Skill Service', () => {
       mockPrisma.skill.count.mockResolvedValue(0)
       mockPrisma.skill.findMany.mockResolvedValue([])
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       await skillService.getAll({ category: 'dev' })
 
       expect(mockPrisma.skill.count).toHaveBeenCalledWith({
@@ -126,7 +126,7 @@ describe('Skill Service', () => {
       mockPrisma.skill.count.mockResolvedValue(0)
       mockPrisma.skill.findMany.mockResolvedValue([])
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       await skillService.getAll({ search: 'test' })
 
       expect(mockPrisma.skill.count).toHaveBeenCalledWith({
@@ -155,7 +155,7 @@ describe('Skill Service', () => {
 
       mockPrisma.skill.findUnique.mockResolvedValue(mockSkill)
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.getById('1')
 
       expect(result).toBeDefined()
@@ -165,7 +165,7 @@ describe('Skill Service', () => {
     it('should return null for non-existent skill', async () => {
       mockPrisma.skill.findUnique.mockResolvedValue(null)
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.getById('999')
 
       expect(result).toBeNull()
@@ -195,7 +195,7 @@ describe('Skill Service', () => {
 
       mockPrisma.skill.create.mockResolvedValue(createdSkill)
 
-      const { skillService } = await import('../services/skillService.js')
+      const { skillService } = await import('../services/skillService')
       const result = await skillService.create(newSkill)
 
       expect(result.name).toBe('New Skill')
