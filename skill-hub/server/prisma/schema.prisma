@@ -25,6 +25,9 @@ model Skill {
   outputPreview String? // Output Preview 内容
   scores    String?  // 评分 JSON: {security, clarity, practicality, quality, maintainability, innovation}
   compatibleAgents String? // 兼容的 Agents JSON: ["claude-code", "openclaw", ...]
+  sourceFiles String?  // 源码文件列表 JSON: [{name, path, type}]
+  version   String?   @default("1.0.0") // 版本号
+  license   String?   // 许可证
   category  Category @relation(fields: [categoryId], references: [id])
   categoryId String
   createdAt DateTime @default(now())
