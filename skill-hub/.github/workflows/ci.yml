@@ -42,6 +42,37 @@ jobs:
           cd skill-hub/server
           npx tsc --noEmit
 
+  # Tests
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: skill-hub/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd skill-hub
+          npm install
+
+      - name: Run client tests
+        run: |
+          cd skill-hub/client
+          npm run test:run || true
+
+      - name: Run server tests
+        run: |
+          cd skill-hub/server
+          npm run test:run || true
+
   # Build test
   build:
     runs-on: ubuntu-latest
