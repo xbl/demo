@@ -9,6 +9,57 @@
         <p class="hero-subtitle">
           精选各类 Skills，提升你的 AI 助手能力
         </p>
+        
+        <!-- Search Bar -->
+        <div class="hero-search">
+          <div class="search-bar">
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="搜索 Skills..."
+              class="search-input-large"
+              @keyup.enter="handleSearch"
+            />
+            <button class="search-btn" @click="handleSearch">
+              🔍 搜索
+            </button>
+          </div>
+          
+          <!-- Suggestions -->
+          <div class="suggestions" v-if="suggestions.length > 0">
+            <span 
+              v-for="s in suggestions" 
+              :key="s"
+              class="suggestion-tag"
+              @click="searchByTag(s)"
+            >
+              {{ s }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Popular Tags -->
+    <section class="tags-section" v-if="popularTags.length > 0">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="icon">🏷️</span>
+            热门标签
+          </h2>
+        </div>
+        <div class="tags-cloud">
+          <span 
+            v-for="tag in popularTags" 
+            :key="tag.tag"
+            class="tag-item"
+            @click="searchByTag(tag.tag)"
+          >
+            {{ tag.tag }}
+            <span class="tag-count">{{ tag.count }}</span>
+          </span>
+        </div>
       </div>
     </section>
 
@@ -59,10 +110,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Skill, SkillCategory } from '@/types'
 import SkillCard from '@/components/SkillCard.vue'
 import CategoryCard from '@/components/CategoryCard.vue'
 import { skillApi } from '@/api/skill'
+import { searchApi } from '@/api/search'
+
+const router = useRouter()
+const searchQuery = ref('')
+const suggestions = ref<string[]>([])
+const popularTags = ref<{ tag: string; count: number }[]>([])
 
 // 模拟数据（后端未就绪时使用）
 const featuredSkills = ref<Skill[]>([
@@ -125,7 +183,7 @@ const categories = ref<SkillCategory[]>([
   { id: 'security', name: '安全合规', icon: '🔒', count: 32 }
 ])
 
-onMounted(async () => {
+async function loadFeatured() {
   try {
     const res = await skillApi.getFeatured()
     if (res.data.success && res.data.data.length > 0) {
@@ -134,6 +192,44 @@ onMounted(async () => {
   } catch (e) {
     console.log('Using mock data')
   }
+}
+
+async function loadCategories() {
+  try {
+    const res = await skillApi.getCategories()
+    if (res.data.success) {
+      categories.value = res.data.data
+    }
+  } catch (e) {
+    console.log('Using mock categories')
+  }
+}
+
+async function loadPopularTags() {
+  try {
+    const res = await searchApi.getPopularTags(15)
+    if (res.data.success) {
+      popularTags.value = res.data.data
+    }
+  } catch (e) {
+    console.log('No popular tags')
+  }
+}
+
+async function handleSearch() {
+  if (searchQuery.value.trim()) {
+    router.push({ name: 'search', query: { q: searchQuery.value } })
+  }
+}
+
+function searchByTag(tag: string) {
+  router.push({ name: 'search', query: { q: tag } })
+}
+
+onMounted(() => {
+  loadFeatured()
+  loadCategories()
+  loadPopularTags()
 })
 </script>
 
@@ -151,7 +247,7 @@ onMounted(async () => {
 
 /* Hero Section */
 .hero {
-  padding: 4rem 0;
+  padding: 4rem 0 3rem;
   text-align: center;
   background: linear-gradient(180deg, rgba(102, 126, 234, 0.15) 0%, transparent 100%);
 }
@@ -173,6 +269,116 @@ onMounted(async () => {
 .hero-subtitle {
   font-size: 1.25rem;
   color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2rem;
+}
+
+/* Search Bar */
+.hero-search {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-input-large {
+  flex: 1;
+  background: #1a1a2e;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  color: #fff;
+  font-size: 1.125rem;
+  transition: all 0.2s;
+}
+
+.search-input-large:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+.search-input-large::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-btn {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.suggestions {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.suggestion-tag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.suggestion-tag:hover {
+  background: rgba(102, 126, 234, 0.4);
+}
+
+/* Tags Section */
+.tags-section {
+  padding: 2rem 0;
+}
+
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  color: #fff;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tag-item:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.tag-count {
+  background: rgba(102, 126, 234, 0.3);
+  color: #667eea;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
 }
 
 /* Section Styles */

@@ -6,6 +6,7 @@ import path from 'path'
 import skillsRouter from './routes/skills.js'
 import categoriesRouter from './routes/categories.js'
 import socialRouter from './routes/social.js'
+import searchRouter from './routes/search.js'
 import uploadRouter from './routes/upload.js'
 
 dotenv.config()
@@ -26,6 +27,7 @@ app.use('/api/skills', skillsRouter)
 app.use('/api/categories', categoriesRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/social', socialRouter)
+app.use('/api/search', searchRouter)
 
 // Health check
 app.get('/health', (req, res) => {
