@@ -3,10 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy and install client dependencies
+# Copy and install client dependencies (including dev for vue-tsc)
 COPY client/package*.json ./client/
 WORKDIR /app/client
-RUN npm install
+RUN npm install --include=dev
 
 # Copy client source and build
 COPY client/ ./
