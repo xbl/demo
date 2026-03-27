@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y openssl sqlite3 && rm -rf /var/lib/apt/
 # Copy server package files
 COPY server/package*.json ./
 
-# Install production dependencies
-RUN npm install
+# Install production dependencies (including tsx for seed)
+RUN npm install && npm install -D tsx
 
 # Copy server source code
 COPY server/ ./
@@ -39,4 +39,5 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget -q --spider http://localhost:4000/health || exit 1
 
-CMD ["sh", "-c", "npx prisma db push && npm start"]
+# Run seed data and start server
+CMD ["sh", "-c", "npx prisma db push && npx tsx prisma/seed.ts && npm start"]
