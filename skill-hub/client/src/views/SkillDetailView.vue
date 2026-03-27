@@ -86,30 +86,95 @@
         <p class="description">{{ skill.description }}</p>
       </div>
 
-      <!-- Features -->
-      <div class="section">
-        <h2 class="section-title">✨ 功能特性</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <span class="feature-icon">🎯</span>
-            <h3>精准识别</h3>
-            <p>采用先进的 AI 算法，确保识别准确率达到行业领先水平</p>
+      <!-- Scores Section -->
+      <div class="section" v-if="skill.scores">
+        <h2 class="section-title">📊 评分</h2>
+        <div class="scores-grid">
+          <div class="score-item security">
+            <span class="score-icon">🛡️</span>
+            <span class="score-label">安全性</span>
+            <span class="score-value">{{ skill.scores.security }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.security * 10) + '%' }"></div>
+            </div>
           </div>
-          <div class="feature-card">
-            <span class="feature-icon">⚡</span>
-            <h3>快速响应</h3>
-            <p>优化算法实现毫秒级响应，提升工作效率</p>
+          <div class="score-item clarity">
+            <span class="score-icon">💡</span>
+            <span class="score-label">清晰度</span>
+            <span class="score-value">{{ skill.scores.clarity }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.clarity * 10) + '%' }"></div>
+            </div>
           </div>
-          <div class="feature-card">
-            <span class="feature-icon">🔒</span>
-            <h3>安全可靠</h3>
-            <p>企业级安全标准，保护用户数据隐私</p>
+          <div class="score-item practicality">
+            <span class="score-icon">⚙️</span>
+            <span class="score-label">实用性</span>
+            <span class="score-value">{{ skill.scores.practicality }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.practicality * 10) + '%' }"></div>
+            </div>
           </div>
-          <div class="feature-card">
-            <span class="feature-icon">🌍</span>
-            <h3>多语言支持</h3>
-            <p>支持全球主要语言，满足国际化需求</p>
+          <div class="score-item quality">
+            <span class="score-icon">✨</span>
+            <span class="score-label">质量</span>
+            <span class="score-value">{{ skill.scores.quality }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.quality * 10) + '%' }"></div>
+            </div>
           </div>
+          <div class="score-item maintainability">
+            <span class="score-icon">🔧</span>
+            <span class="score-label">可维护性</span>
+            <span class="score-value">{{ skill.scores.maintainability }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.maintainability * 10) + '%' }"></div>
+            </div>
+          </div>
+          <div class="score-item innovation">
+            <span class="score-icon">🚀</span>
+            <span class="score-label">创新性</span>
+            <span class="score-value">{{ skill.scores.innovation }}/10</span>
+            <div class="score-bar">
+              <div class="score-fill" :style="{ width: (skill.scores.innovation * 10) + '%' }"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output Preview Section -->
+      <div class="section" v-if="skill.outputPreview">
+        <h2 class="section-title">👁️ 输出预览</h2>
+        <div class="output-preview">
+          <div class="preview-header">
+            <span class="preview-title">output_preview.md</span>
+            <button class="copy-btn" @click="copyOutput">
+              📋 复制
+            </button>
+          </div>
+          <pre class="preview-content"><code>{{ skill.outputPreview }}</code></pre>
+        </div>
+      </div>
+
+      <!-- Compatible Agents -->
+      <div class="section" v-if="skill.compatibleAgents && skill.compatibleAgents.length > 0">
+        <h2 class="section-title">🤖 兼容 Agents</h2>
+        <div class="agents-grid">
+          <div 
+            v-for="agent in skill.compatibleAgents" 
+            :key="agent"
+            class="agent-item"
+          >
+            <span class="agent-icon">{{ getAgentIcon(agent) }}</span>
+            <span class="agent-name">{{ getAgentName(agent) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILL.md Section -->
+      <div class="section" v-if="skill.skillMd">
+        <h2 class="section-title">📄 SKILL.md</h2>
+        <div class="skill-md-content">
+          <pre><code>{{ skill.skillMd }}</code></pre>
         </div>
       </div>
 
@@ -264,6 +329,39 @@ async function submitComment() {
 
 function useSkill() {
   alert('Skill 使用功能开发中...')
+}
+
+function copyOutput() {
+  if (skill.value?.outputPreview) {
+    navigator.clipboard.writeText(skill.value.outputPreview)
+    alert('已复制到剪贴板！')
+  }
+}
+
+function getAgentIcon(agent: string): string {
+  const icons: Record<string, string> = {
+    'claude-code': '🦁',
+    'openclaw': '🦞',
+    'cursor': '💻',
+    'vscode': '📘',
+    'codex': '⚡',
+    'gemini': '🌟',
+    'opencode': '🔵',
+  }
+  return icons[agent] || '🤖'
+}
+
+function getAgentName(agent: string): string {
+  const names: Record<string, string> = {
+    'claude-code': 'Claude Code',
+    'openclaw': 'OpenClaw',
+    'cursor': 'Cursor',
+    'vscode': 'VS Code',
+    'codex': 'Codex CLI',
+    'gemini': 'Gemini CLI',
+    'opencode': 'OpenCode',
+  }
+  return names[agent] || agent
 }
 
 function formatNumber(num: number): string {
@@ -512,40 +610,139 @@ function formatDate(dateStr: string): string {
   font-size: 1rem;
 }
 
-/* Features */
-.features-grid {
+/* Scores */
+.scores-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
 }
 
-.feature-card {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 16px;
+.score-item {
+  background: #1a1a2e;
+  border-radius: 12px;
+  padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s;
 }
 
-.feature-card:hover {
-  border-color: #667eea;
-  transform: translateY(-4px);
-}
-
-.feature-icon {
-  font-size: 2rem;
+.score-icon {
+  font-size: 1.25rem;
   display: block;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.feature-card h3 {
+.score-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.score-value {
   color: #fff;
+  font-weight: 700;
   font-size: 1.125rem;
+  display: block;
   margin-bottom: 0.5rem;
 }
 
-.feature-card p {
-  color: rgba(255, 255, 255, 0.6);
+.score-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* Output Preview */
+.output-preview {
+  background: #1e1e1e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #2d2d2d;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.preview-title {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.copy-btn {
+  background: #3d3d3d;
+  border: none;
+  color: #fff;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover {
+  background: #4d4d4d;
+}
+
+.preview-content {
+  padding: 1rem;
+  margin: 0;
+  overflow-x: auto;
+  max-height: 400px;
+  color: #ccc;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Agents */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.agent-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #1a1a2e;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.agent-icon {
+  font-size: 1.25rem;
+}
+
+.agent-name {
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+/* SKILL.md */
+.skill-md-content {
+  background: #1a1a2e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+}
+
+.skill-md-content pre {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.875rem;
   line-height: 1.6;
 }
