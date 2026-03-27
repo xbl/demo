@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY server/package*.json ./
+
+# Install production dependencies
+RUN npm install --production
+
+# Copy source code
+COPY server/ ./
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Push database schema
+RUN npx prisma db push
+
+# Create uploads directory
+RUN mkdir -p uploads
+
+EXPOSE 4000
+
+CMD ["npm", "start"]

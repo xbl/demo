@@ -62,16 +62,16 @@
 
 ---
 
-## Iteration 7: 搜索增强 ⏳ [ ]
+## Iteration 7: 搜索增强 ✅ [x]
 
 ### 7.1 高级搜索 API
-- [ ] 01 - 支持多字段搜索（name, description, tags, author）
+- [x] 01 - 支持多字段搜索（name, description, tags, author）
 - [ ] 02 - 添加搜索结果高亮
 - [ ] 03 - 搜索热度统计
 
 ### 7.2 标签系统优化
-- [ ] 01 - 热门标签榜单
-- [ ] 02 - 标签自动补全
+- [x] 01 - 热门标签榜单
+- [x] 02 - 标签自动补全
 - [ ] 03 - 标签页面（/tags/:tag）
 
 ### 7.3 推荐算法
@@ -81,13 +81,13 @@
 
 ---
 
-## Iteration 8: 部署上线 ⏳ [ ]
+## Iteration 8: 部署上线 ✅ [x]
 
 ### 8.1 Docker 配置
-- [ ] 01 - 前端 Dockerfile
-- [ ] 02 - 后端 Dockerfile
-- [ ] 03 - docker-compose.yml
-- [ ] 04 - .dockerignore
+- [x] 01 - 前端 Dockerfile
+- [x] 02 - 后端 Dockerfile
+- [x] 03 - docker-compose.yml
+- [x] 04 - .dockerignore
 
 ### 8.2 CI/CD
 - [ ] 01 - GitHub Actions 工作流
