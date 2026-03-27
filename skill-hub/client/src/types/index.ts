@@ -21,6 +21,9 @@ export interface Skill {
     innovation: number
   }
   compatibleAgents?: string[] // 兼容的 Agents
+  sourceFiles?: string      // 源码文件列表 (JSON string)
+  version?: string          // 版本号
+  license?: string          // 许可证
   createdAt: string
   updatedAt: string
 }
