@@ -9,7 +9,7 @@ export const socialService = {
       orderBy: { createdAt: 'desc' },
       take: 50
     })
-    return comments.map(c => ({
+    return comments.map((c: any) => ({
       id: c.id,
       content: c.content,
       createdAt: c.createdAt.toISOString()
