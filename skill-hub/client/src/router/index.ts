@@ -28,6 +28,11 @@ const router = createRouter({
       path: '/publish',
       name: 'publish',
       component: () => import('@/views/PublishView.vue')
+    },
+    {
+      path: '/my-skills',
+      name: 'my-skills',
+      component: () => import('@/views/MySkillsView.vue')
     }
   ]
 })
