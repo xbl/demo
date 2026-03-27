@@ -90,7 +90,7 @@
 - [x] 04 - .dockerignore
 
 ### 8.2 CI/CD
-- [ ] 01 - GitHub Actions 工作流
+- [x] 01 - GitHub Actions 工作流
 - [ ] 02 - 自动测试
 - [ ] 03 - 自动部署
 
