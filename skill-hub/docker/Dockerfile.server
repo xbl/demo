@@ -2,25 +2,29 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Copy server package files
 COPY server/package*.json ./
+
+# Install production dependencies
 RUN npm install
 
-# Copy source code
+# Copy server source code
 COPY server/ ./
 
 # Copy prisma files
 COPY server/prisma ./prisma/
 
-# Build TypeScript
-RUN npm run build
-
 # Set DATABASE_URL for Prisma
 ENV DATABASE_URL="file:/app/prisma/data/skillhub.db"
 
-# Generate Prisma client and push schema
+# Generate Prisma client
 RUN npx prisma generate
-RUN npx prisma db push
+
+# Create data directory for database
+RUN mkdir -p prisma/data
+
+# Build TypeScript
+RUN npm run build
 
 # Create uploads directory
 RUN mkdir -p uploads
@@ -32,4 +36,4 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget -q --spider http://localhost:4000/health || exit 1
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma db push && npm start"]
