@@ -13,7 +13,7 @@ export const searchApi = {
     category?: string
     search?: string
     sort?: 'popular' | 'recent' | 'stars'
-  }) => api.get('/api/search', { params }),
+  }) => api.get('/search', { params }),
 
   // 获取热门标签
   getPopularTags: (limit?: number) => 
